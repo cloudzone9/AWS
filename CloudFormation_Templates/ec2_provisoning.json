@@ -1,0 +1,74 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "EC2 Instance provisoning",
+    "Resources": {
+        "krrvpc": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "192.168.0.0/16",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "krrvpc"
+                    }
+                ]
+            }
+        },
+        "krrsg": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "krrsg",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 80,
+                        "ToPort": 80,
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "krrvpc"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "krrsg"
+                    }
+                ]
+            }
+        },
+        "ec2apache": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "KeyName": "testkey",
+                "ImageId": "ami-5b673c34",
+                "InstanceType": "t2.micro",
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "krrsg"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ec2Apache"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": ""
+                },
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -ex",
+                                "yum install httpd -y"
+                            ]
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

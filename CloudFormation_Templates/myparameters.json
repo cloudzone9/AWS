@@ -1,0 +1,63 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CF Template with parameters ",
+    "Parameters": {
+        "krrkey": {
+            "Description": "Select Key Pair",
+            "Type": "AWS::EC2::KeyPair::KeyName"
+        },
+        "OSImage": {
+            "Description": "Select Image",
+            "Type": "AWS::EC2::Image::Id",
+            "Default": "ami-5b673c34"
+        },
+        "InstanceType": {
+            "Description": "Select Instance Type",
+            "Type": "String",
+            "Default": "t2.micro",
+            "AllowedValues": [
+                "t2.micro",
+                "t2.small",
+                "t2.nano"
+            ]
+        },
+        "krrsg": {
+            "Description": "select security group",
+            "Type": "AWS::EC2::SecurityGroup::Id"
+        },
+        "subnet": {
+            "Description": "select subnet",
+            "Type": "AWS::EC2::Subnet::Id"
+        }
+    },
+    "Resources": {
+        "myec2": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "KeyName": {
+                    "Ref": "krrkey"
+                },
+                "ImageId": {
+                    "Ref": "OSImage"
+                },
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "krrsg"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "subnet"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "Parameter"
+                    }
+                ]
+            }
+        }
+    }
+}

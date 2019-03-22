@@ -1,0 +1,50 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Network as ",
+    "Resources": {
+        "myvpc": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "192.168.0.0/16",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ntier"
+                    }
+                ]
+            }
+        },
+        "websubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": "ap-south-1a",
+                "VpcId": {
+                    "Ref": "myvpc"
+                },
+                "CidrBlock": "192.168.0.0/24",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "web"
+                    }
+                ]
+            }
+        },
+        "datasubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": "ap-south-1b",
+                "VpcId": {
+                    "Ref": "myvpc"
+                },
+                "CidrBlock": "192.168.1.0/24",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "data"
+                    }
+                ]
+            }
+        }
+    }
+}

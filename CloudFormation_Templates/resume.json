@@ -1,0 +1,32 @@
+{
+    "Resume_Title": "System Engineer",
+	"ContactDetails": {
+		"Name":  "Rohith Ram",
+		"Mobile": "9177958885",
+		"Email": "krohithram@gmail.com"
+	},
+	"Professional Summary": "Around 6.5+ years of professional experience in Information Technology industry which includes Windows server 2003/2008/2012, RHEL/CentOS Linux server 5/6/7 and AWS.",
+	"Work_Experience": [ 
+	{
+		"Company": "Triniti",
+		"Designation": "System Engineer",
+		"Period": "May 2014 to till date",
+		"Responsibilities": "Installation and configuration of RHEL, CentOS & Windows servers. Setting up Test, Development, Staging and Production Environments on Linux Servers."
+	},
+	{
+		"Company": "Alliance Prosys",
+		"Designation": "Technical Support Engineer",
+		"Period": "Nov 2012 to May 2014",
+		"Responsibilities": "User Management including Adding, Deleting, Modifying, auditing and Assigning Rights to the User accounts on Domain Controller."
+	},
+	{
+		"Company": "Matrix",
+		"Designation": "Technical Executive",
+		"Period": "Dec 2011 to May 2012",
+		"Responsibilities": "Installing, Configuring, Troubleshooting and Repairing Hardware on Desktop computers"
+	}
+	
+	],
+	
+	"Skills": "Windows and Linux Administration, DNS, DHCP, Shell Scripting, Virtualization, NFS,FTP and SAMBA server, Tomcat and Glassfish"
+}

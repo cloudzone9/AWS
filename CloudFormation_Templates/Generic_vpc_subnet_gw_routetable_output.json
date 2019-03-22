@@ -1,0 +1,210 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "EC2 Instance and Network Creation    ",
+    "Parameters": {
+        "vpcCIDR": {
+            "Description": "Enter CIDR Range for your network",
+            "Type": "String",
+            "Default": "192.168.0.0/16"
+        },
+        "websubnetCIDR": {
+            "Description": "Enter CIDR Range for web Subnet",
+            "Type": "String",
+            "Default": "192.168.0.0/24"
+        },
+        "datasubnetCIDR": {
+            "Description": "Enter CIDR Range for Data Subnet",
+            "Type": "String",
+            "Default": "192.168.1.0/24"
+        },
+        "websubnetaz": {
+            "Description": "Enter availability zone for websubnet",
+            "Type": "String",
+            "Default": "ap-south-1a"
+        },
+        "datasubnetaz": {
+            "Description": "Enter availability zone for data subnet",
+            "Type": "String",
+            "Default": "ap-south-1b"
+        }
+    },
+    "Resources": {
+        "myvpc": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "vpcCIDR"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ntier"
+                    }
+                ]
+            }
+        },
+        "websubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "websubnetaz"
+                },
+                "VpcId": {
+                    "Ref": "myvpc"
+                },
+                "CidrBlock": {
+                    "Ref": "websubnetCIDR"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "web"
+                    }
+                ]
+            }
+        },
+        "datasubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "datasubnetaz"
+                },
+                "VpcId": {
+                    "Ref": "myvpc"
+                },
+                "CidrBlock": {
+                    "Ref": "datasubnetCIDR"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "data"
+                    }
+                ]
+            }
+        },
+        "myigw": {
+            "Type": "AWS::EC2::InternetGateway",
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "myigw"
+                    }
+                ]
+            }
+        },
+        "AttachGateway": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "myvpc"
+                },
+                "InternetGatewayId": {
+                    "Ref": "myigw"
+                }
+            }
+        },
+        "ntierroute": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "myvpc"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "nroute"
+                    }
+                ]
+            }
+        },
+        "myroute": {
+            "Type": "AWS::EC2::Route",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "ntierroute"
+                },
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "GatewayId": {
+                    "Ref": "myigw"
+                }
+            }
+        },
+        "websubrtAssoc": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "websubnet"
+                },
+                "RouteTableId": {
+                    "Ref": "ntierroute"
+                }
+            }
+        },
+        "datasubrtassoc": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "datasubnet"
+                },
+                "RouteTableId": {
+                    "Ref": "ntierroute"
+                }
+            }
+        },
+        "mysecgroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "allow http port",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 80,
+                        "ToPort": 80,
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "myvpc"
+                }
+            }
+        },
+        "webserver": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "KeyName": "testkey",
+                "ImageId": "ami-5b673c34",
+                "InstanceType": "t2.micro",
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "mysecgroup"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "websubnet"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "Webserver"
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "myvpc": {
+            "Value": "myvpc"
+        },
+        "websubnet": {
+            "Value": "websubnet"
+        },
+        "datasubnet": {
+            "Value": "datasubnet"
+        },
+        "webserver": {
+            "Value": "Ec2 instance"
+        }
+    }
+}

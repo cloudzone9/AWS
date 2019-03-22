@@ -1,0 +1,270 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "EC2 Instance and Network Creation",
+    "Resources": {
+        "krrvpc": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "192.168.0.0/16",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "krr"
+                    }
+                ]
+            }
+        },
+        "websubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": "ap-south-1a",
+                "VpcId": {
+                    "Ref": "krrvpc"
+                },
+                "CidrBlock": "192.168.1.0/24",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "web"
+                    }
+                ]
+            }
+        },
+        "appsubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": "ap-south-1b",
+                "VpcId": {
+                    "Ref": "krrvpc"
+                },
+                "CidrBlock": "192.168.2.0/24",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "app"
+                    }
+                ]
+            }
+        },
+        "datasubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": "ap-south-1a",
+                "VpcId": {
+                    "Ref": "krrvpc"
+                },
+                "CidrBlock": "192.168.3.0/24",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "data"
+                    }
+                ]
+            }
+        },
+        "managementsubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": "ap-south-1b",
+                "VpcId": {
+                    "Ref": "krrvpc"
+                },
+                "CidrBlock": "192.168.4.0/24",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "Management"
+                    }
+                ]
+            }
+        },
+        "krrigw": {
+            "Type": "AWS::EC2::InternetGateway",
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "krrigw"
+                    }
+                ]
+            }
+        },
+        "AttachGateway": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "krrvpc"
+                },
+                "InternetGatewayId": {
+                    "Ref": "krrigw"
+                }
+            }
+        },
+        "publicrt": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "krrvpc"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "publicrt"
+                    }
+                ]
+            }
+        },
+        "publicroute": {
+            "Type": "AWS::EC2::Route",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "publicrt"
+                },
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "GatewayId": {
+                    "Ref": "krrigw"
+                }
+            }
+        },
+        "privatert": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "krrvpc"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "private-rt"
+                    }
+                ]
+            }
+        },
+        "privateroute": {
+            "Type": "AWS::EC2::Route",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "privatert"
+                },
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "GatewayId": {
+                    "Ref": "krrigw"
+                }
+            }
+        },
+        "websunetrtasc": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "websubnet"
+                },
+                "RouteTableId": {
+                    "Ref": "publicrt"
+                }
+            }
+        },
+        "magntsubnetrtasc": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "managementsubnet"
+                },
+                "RouteTableId": {
+                    "Ref": "publicrt"
+                }
+            }
+        },
+        "appsubnetrtasc": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "appsubnet"
+                },
+                "RouteTableId": {
+                    "Ref": "privatert"
+                }
+            }
+        },
+        "datasubnetrtasc": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "datasubnet"
+                },
+                "RouteTableId": {
+                    "Ref": "privatert"
+                }
+            }
+        },
+        "krrsg": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "allow tomcat port",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 8080,
+                        "ToPort": 8080,
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "krrvpc"
+                }
+            }
+        },
+        "webserver": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "KeyName": "testkey",
+                "ImageId": "ami-5b673c34",
+                "InstanceType": "t2.micro",
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "krrsg"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "websubnet"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "webserver"
+                    }
+                ]
+            }
+        },
+        "appserver": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "KeyName": "testkey",
+                "ImageId": "ami-5b673c34",
+                "InstanceType": "t2.micro",
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "krrsg"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "appsubnet"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "appserver"
+                    }
+                ]
+            }
+        },
+        "publicip": {
+            "Type": "AWS::EC2::EIP",
+            "Properties": {
+                "Domain": "vpc",
+                "InstanceId": {
+                    "Ref": "webserver"
+                }
+            }
+        }
+    }
+}

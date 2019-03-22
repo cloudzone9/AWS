@@ -1,0 +1,137 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Network as ",
+  "Resources": {
+    "myvpc": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "192.168.0.0/16",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "ntier"
+          }
+        ]
+      }
+    },
+    "websubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "AvailabilityZone": "ap-south-1a",
+        "VpcId": {
+          "Ref": "myvpc"
+        },
+        "CidrBlock": "192.168.0.0/24",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "web"
+          }
+        ]
+      }
+    },
+    "datasubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "AvailabilityZone": "ap-south-1b",
+        "VpcId": {
+          "Ref": "myvpc"
+        },
+        "CidrBlock": "192.168.1.0/24",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "data"
+          }
+        ]
+      }
+    },
+    "myigw": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "myigw"
+          }
+        ]
+      }
+    },
+    "AttachGateway": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {
+          "Ref": "myvpc"
+        },
+        "InternetGatewayId": {
+          "Ref": "myigw"
+        }
+      }
+    },
+    "ntierroute": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "myvpc"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "nroute"
+          }
+        ]
+      }
+    },
+    "myroute": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "ntierroute"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "myigw"
+        }
+      }
+    },
+    "websubrtAssoc": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "websubnet"
+        },
+        "RouteTableId": {
+          "Ref": "ntierroute"
+        }
+      }
+    },
+    "datasubrtassoc": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "datasubnet"
+        },
+        "RouteTableId": {
+          "Ref": "ntierroute"
+        }
+      }
+    },
+    "krrsec": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "krr security",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 80,
+            "ToPort": 80,
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": {
+          "Ref": "myvpc"
+        }
+      }
+    }
+  }
+}
