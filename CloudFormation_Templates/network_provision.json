@@ -1,0 +1,170 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Provisioning Network",
+    "Metadata": {},
+    "Parameters": {},
+    "Mappings": {},
+    "Conditions": {},
+    "Resources": {
+        "krrvpc": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.10.0.0/16",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "krrvpc"
+                    }
+                ]
+            }
+        },
+        "websubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": "us-east-1a",
+                "VpcId": {
+                    "Ref": "krrvpc"
+                },
+                "CidrBlock": "10.10.1.0/24",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "web"
+                    }
+                ]
+            }
+        },
+        "datasubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": "us-east-1b",
+                "VpcId": {
+                    "Ref": "krrvpc"
+                },
+                "CidrBlock": "10.10.2.0/24",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "data"
+                    }
+                ]
+            }
+        },
+        "krrigw": {
+            "Type": "AWS::EC2::InternetGateway",
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "krrigw"
+                    }
+                ]
+            }
+        },
+        "AttachGateway": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "krrvpc"
+                },
+                "InternetGatewayId": {
+                    "Ref": "krrigw"
+                }
+            }
+        },
+        "rtkrr": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "krrvpc"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "rtkrr"
+                    }
+                ]
+            }
+        },
+        "routekrr": {
+            "Type": "AWS::EC2::Route",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "rtkrr"
+                },
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "GatewayId": {
+                    "Ref": "krrigw"
+                }
+            }
+        },
+        "routewebassc": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "websubnet"
+                },
+                "RouteTableId": {
+                    "Ref": "rtkrr"
+                }
+            }
+        },
+        "routedataassc": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "datasubnet"
+                },
+                "RouteTableId": {
+                    "Ref": "rtkrr"
+                }
+            }
+        },
+        "krrsg": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Allow ssh & http ports",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "80",
+                        "ToPort": "80",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "krrvpc"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "krrsg"
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "krrvpc": {
+            "Value": "krrvpc"
+        },
+        "websubnet": {
+            "Value": "websubnet"
+        },
+        "datasubnet": {
+            "Value": "datasubnet"
+        },
+        "krrigw": {
+            "Value": "krrigw"
+        },
+        "krrsg": {
+            "Value": "krrsg"
+        }
+    }
+}
